@@ -14,7 +14,7 @@ def insert_query():
     connection = pymysql.connect(**db_config)
     try:
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO ClimateData (location, date, temperature, humidity) VALUES ('Paris', '2023-01-02', 10.0, 75)")
+            cursor.execute("INSERT INTO ClimateData (location, date, temperature, humidity, precipitation) VALUES ('Paris', '2023-01-02', 10.0, 75, 65)")
             connection.commit()
             print("Insert Query Executed Successfully!")
     finally:
