@@ -1,0 +1,29 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install MySQL client
+      run: sudo apt-get install mysql-client
+
+    - name: Create ClimateData Table
+      run: mysql -h ${{ secrets.MYSQL_HOST }} -u ${{ secrets.MYSQL_USER }} -p${{ secrets.MYSQL_PASSWORD }} -e "source sql/create_table.sql"
+
+    - name: Add Humidity Column
+      run: mysql -h ${{ secrets.MYSQL_HOST }} -u ${{ secrets.MYSQL_USER }} -p${{ secrets.MYSQL_PASSWORD }} -e "source sql/add_humidity_column.sql"
+
+    - name: Seed Data
+      run: mysql -h ${{ secrets.MYSQL_HOST }} -u ${{ secrets.MYSQL_USER }} -p${{ secrets.MYSQL_PASSWORD }} -e "source sql/data_seeding.sql"
+
+    - name: Concurrent Queries
+      run: python3 scripts/multi_thread_queries.py
