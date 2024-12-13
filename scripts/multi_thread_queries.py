@@ -1,29 +1,38 @@
-import threading
-import mysql.connector
+import pymysql
 
-def insert_data():
-    conn = mysql.connector.connect(host='group-8-automated-mysql-server.mysql.database.azure.com', user='group8', password='Secret55', database='project_db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO ClimateData (location, record_date, temperature, precipitation, humidity) VALUES ('Vancouver', '2024-02-01', 7.1, 12, 80.3)")
-    conn.commit()
-    conn.close()
+db_config = {
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'port': 3306 
+}
 
-def select_data():
-    conn = mysql.connector.connect(host='group-8-automated-mysql-server.mysql.database.azure.com', user='group8', password='Secret55', database='project_db')
-    cursor = conn.cursor()
+def insert_query(cursor):
+    cursor.execute("INSERT INTO ClimateData (location, date, temperature, humidity) VALUES ('Paris', '2023-01-02', 10.0, 75)")
+    print("Insert Query Executed Successfully!")
+
+def select_query(cursor):
     cursor.execute("SELECT * FROM ClimateData WHERE temperature > 20")
-    for row in cursor.fetchall():
+    results = cursor.fetchall()  # Fetch all results
+    for row in results:
         print(row)
-    conn.close()
 
-threads = []
-for _ in range(3):
-    t1 = threading.Thread(target=insert_data)
-    t2 = threading.Thread(target=select_data)
-    threads.extend([t1, t2])
+def update_query(cursor):
+    cursor.execute("UPDATE ClimateData SET humidity = 60 WHERE location = 'Toronto'")
+    print("Update Query Executed Successfully!")
 
-for t in threads:
-    t.start()
+def main():
+    # Create the connection and cursor once, and pass the cursor to each query
+    connection = pymysql.connect(**db_config)
+    try:
+        with connection.cursor() as cursor:
+            insert_query(cursor)
+            select_query(cursor)
+            update_query(cursor)
+            connection.commit()  # Save any changes after the queries
+    finally:
+        connection.close()  # Always close the connection
 
-for t in threads:
-    t.join()
+if __name__ == "__main__":
+    main()
